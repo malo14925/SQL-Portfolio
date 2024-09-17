@@ -1,0 +1,146 @@
+--#1 Show Customers (their full names, customer ID, and country) who are not in the US.
+SELECT customerid, firstname, lastname, country
+FROM chinook.customers
+WHERE country !="USA";
+
+--#2 Show only the Customers from Brazil.
+SELECT *
+FROM chinook.customers
+WHERE country ="Brazil";
+
+--#3 Find the Invoices of customers who are from Brazil. The resulting table should show the customer's full name, Invoice ID, Date of the invoice, and billing country.
+SELECT cust.firstname, 
+cust.lastname, 
+inv.invoiceid, 
+inv.invoicedate,
+inv.billingcountry
+FROM chinook.invoices inv
+LEFT JOIN chinook.customers cust
+ON inv.customerid=cust.customerid
+WHERE inv.BillingCountry="Brazil";
+
+--#4 Show the Employees who are Sales Agents.
+SELECT *
+FROM chinook.employees
+LIMIT 5;
+
+SELECT *
+FROM chinook.employees
+WHERE title = "Sales Support Agent";
+
+--#5 Find a unique/distinct list of billing countries from the Invoice table.
+SELECT distinct billingaddress
+FROM chinook.invoices;
+
+--#6 Provide a query that shows the invoices associated with each sales agent. The resulting table should include the Sales Agent's full name.
+SELECT *
+FROM chinook.invoices
+LIMIT 5;
+
+SELECT emp.LastName, emp.Firstname, inv.InvoiceId
+FROM chinook.Employees emp 
+JOIN chinook.Customers cust 
+ON cust.SupportRepId = emp.EmployeeId
+JOIN chinook.Invoices Inv 
+ON Inv.CustomerId = cust.CustomerId;
+
+--#7 Show the Invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers.
+SELECT emp.lastname, emp.firstname, cust.firstname, cust.lastname, cust.country, inv.total
+FROM chinook.employees emp
+JOIN chinook.customers cust
+ON cust.supportrepid=emp.employeeid
+JOIN chinook.invoices inv
+ON inv.customerid=cust.customerid;
+
+--#8 How many Invoices were there in 2009?
+SELECT COUNT(*)
+FROM chinook.Invoices
+WHERE InvoiceDate BETWEEN '2009-01-01' AND '2009-12-31';
+
+--#9 What are the total sales for 2009?
+SELECT SUM(total)
+FROM chinook.invoices
+WHERE InvoiceDate BETWEEN '2009-01-01' AND '2009-12-31';
+
+--#10 Write a query that includes the purchased track name with each invoice line ID.
+SELECT inv.invoicelineid, track.name
+FROM chinook.invoice_items inv
+JOIN chinook.tracks track
+ON inv.trackid=track.trackid;
+
+--#11 Write a query that includes the purchased track name AND artist name with each invoice line ID.
+SELECT track.name as Track, art.name as Artist, inv.invoicelineid
+FROM chinook.invoice_items inv
+LEFT JOIN chinook.tracks track
+ON inv.trackid=track.trackid
+INNER JOIN chinook.albums alb
+ON track.albumid=alb.albumid
+LEFT JOIN chinook.artists art
+ON alb.artistid=art.artistid;
+
+--#12 Provide a query that shows all the Tracks, and include the Album name, Media type, and Genre.
+SELECT track.name as 'Track Name', alb.title as 'Album Title', med.name as 'Media Type', gen.name as 'Genre'
+FROM chinook.tracks track
+JOIN chinook.albums alb
+ON track.albumid=alb.albumid
+JOIN chinook.media_types med
+ON track.mediatypeid=med.mediatypeid
+JOIN chinook.genres gen
+ON track.genreid=gen.genreid;
+
+--#13 Show the total sales made by each sales agent.
+SELECT emp.FirstName, emp.LastName,
+ROUND(SUM(Inv.Total), 2) as 'Total Sales' 
+FROM chinook.Employees emp
+
+JOIN chinook.Customers cust 
+ON cust.SupportRepId = emp.EmployeeId
+
+JOIN chinook.Invoices Inv 
+ON Inv.CustomerId = cust.CustomerId
+
+WHERE emp.Title = 'Sales Support Agent' 
+GROUP BY emp.FirstName;
+
+--#14 Which sales agent made the most dollars in sales in 2009?
+SELECT emp.FirstName, emp.LastName,
+ROUND(SUM(Inv.Total), 2) as 'Total Sales' 
+FROM chinook.Employees emp
+
+JOIN chinook.Customers cust 
+ON cust.SupportRepId = emp.EmployeeId
+
+JOIN chinook.Invoices Inv 
+ON Inv.CustomerId = cust.CustomerId
+
+WHERE emp.Title = 'Sales Support Agent' 
+AND inv.invoicedate LIKE '2009%'
+GROUP BY emp.firstname
+ORDER BY (round(sum(inv.total), 2)) DESC
+LIMIT 1;
+
+-- #15 Which playlist has the most amount of songs?
+SELECT DISTINCT play.name,COUNT(track.trackid) as track_count
+FROM chinook.playlist_track track
+JOIN chinook.playlists play
+ON track.playlistid=play.playlistid
+GROUP BY track.playlistid, play.name
+ORDER BY track_count DESC;
+
+--#16 How many tracks are in each album?
+SELECT alb.title as 'Album Title', count(track.trackid) as track_count
+FROM chinook.albums alb
+JOIN chinook.tracks track
+ON alb.albumid=track.albumid
+GROUP BY alb.title
+ORDER BY track_count DESC;
+
+--#17 How many customers bought the album "The Office,Season 3"?
+SELECT alb.title, count(distinct cust.customerid) as total_customers
+FROM chinook.albums alb
+JOIN chinook.tracks track ON alb.albumid=track.albumid
+JOIN chinook.invoice_items invit ON track.trackid=invit.trackid
+JOIN chinook.invoices inv ON invit.invoiceid=inv.invoiceid
+JOIN chinook.customers cust ON inv.customerid=cust.customerid
+WHERE alb.title = 'The Office, Season 3'
+GROUP BY alb.title;
